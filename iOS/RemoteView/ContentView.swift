@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var serverURL = "wss://YOUR-RENDER-SERVICE.onrender.com/ws"
     @State private var urlText = "https://www.google.com"
     @State private var showSettings = false
+    @State private var keepScreenOn = true
 
     var body: some View {
         NavigationStack {
@@ -38,7 +39,8 @@ struct ContentView: View {
                 }
             }
             .sheet(isPresented: $showSettings) { settings }
-            .onAppear { urlText = session.browser.currentURL }
+            .onAppear { urlText = session.browser.currentURL; UIApplication.shared.isIdleTimerDisabled = keepScreenOn }
+            .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
             .onChange(of: session.browser.currentURL) { _, value in urlText = value }
         }
     }
@@ -65,6 +67,12 @@ struct ContentView: View {
                         }
                     }
                     if let error = session.lastError { Text(error).foregroundStyle(.red) }
+                }
+                Section("Display") {
+                    Toggle("Keep iPhone screen awake", isOn: $keepScreenOn)
+                        .onChange(of: keepScreenOn) { _, value in UIApplication.shared.isIdleTimerDisabled = value }
+                    Text("When enabled, the iPhone will not auto-lock while Phone Browser is open.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
                 Section("Remote control") {
                     Text("The Chromebook website controls this browser app only. It can navigate, go back/forward, reload, scroll, tap webpage elements, and type into the focused webpage field.")
