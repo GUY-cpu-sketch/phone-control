@@ -1,0 +1,2 @@
+import SwiftUI
+struct ContentView: View { @State private var url="ws://localhost:8787/ws"; @State private var connected=false; var body: some View { VStack(spacing:20){Text("Phone Control").font(.largeTitle.bold());TextField("WebSocket URL",text:$url).textFieldStyle(.roundedBorder).autocorrectionDisabled();Button(connected ? "Connected" : "Connect"){};Text("Screen sharing is started through Apple's system permission UI.").font(.footnote).foregroundStyle(.secondary)}.padding() } }
