@@ -19,3 +19,5 @@ targets:
         CODE_SIGN_ENTITLEMENTS: iOS/RemoteView/RemoteView.entitlements
 
 # XcodeGen validation
+
+# ReplayKit build validation
