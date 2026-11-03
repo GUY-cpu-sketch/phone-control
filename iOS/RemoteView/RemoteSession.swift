@@ -1,7 +1,6 @@
 import Foundation
 import Combine
 import UIKit
-import ScreenCaptureKit
 
 @MainActor
 final class RemoteSession: ObservableObject {
