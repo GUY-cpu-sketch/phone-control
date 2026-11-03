@@ -12,12 +12,25 @@ jobs:
         run: xcodegen generate
       - name: Build unsigned iOS app
         run: xcodebuild -project RemoteView.xcodeproj -scheme RemoteView -sdk iphoneos -configuration Release -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+      - name: Validate app metadata
+        run: |
+          APP="build/Build/Products/Release-iphoneos/RemoteView.app"
+          test -d "$APP"
+          plutil -lint "$APP/Info.plist"
+          for key in CFBundleName CFBundleDisplayName CFBundleIdentifier CFBundleExecutable CFBundlePackageType CFBundleShortVersionString CFBundleVersion; do
+            value=$(/usr/libexec/PlistBuddy -c "Print :$key" "$APP/Info.plist")
+            test -n "$value"
+            echo "$key=$value"
+          done
       - name: Package IPA
         run: |
+          rm -rf ipa
           mkdir -p ipa/Payload
           cp -R build/Build/Products/Release-iphoneos/RemoteView.app ipa/Payload/
           cd ipa
-          zip -r ../RemoteView.ipa Payload
+          /usr/bin/zip -qry ../RemoteView.ipa Payload
+          cd ..
+          unzip -tq RemoteView.ipa
       - uses: actions/upload-artifact@v4
         with:
           name: RemoteView-iOS-unsigned-ipa
