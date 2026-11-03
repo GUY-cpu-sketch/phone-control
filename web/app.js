@@ -1,4 +1,5 @@
 let ws;
+let viewportWidth = 390, viewportHeight = 844;
 const $ = id => document.getElementById(id);
 function send(command, extra = {}) { if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify({type:'command', command, ...extra})); }
 $('connect').onclick = () => {
@@ -14,7 +15,7 @@ $('connect').onclick = () => {
       if (m.type === 'paired') $('status').textContent = 'Connected to iPhone';
       if (m.type === 'error') $('status').textContent = m.message;
       if (m.type === 'device-offline') $('status').textContent = 'iPhone disconnected';
-      if (m.type === 'browser-state' && m.url) $('url').value = m.url;
+      if (m.type === 'browser-state') { if (m.url) $('url').value = m.url; viewportWidth = m.viewportWidth || viewportWidth; viewportHeight = m.viewportHeight || viewportHeight; }
     } else if (e.data instanceof Blob) {
       $('screen').src = URL.createObjectURL(e.data);
     }
@@ -30,5 +31,5 @@ $('scrollDown').onclick = () => send('scroll', {deltaY:500});
 $('type').onclick = () => send('type', {text:$('typeText').value});
 $('screen').onclick = e => {
   const r = e.currentTarget.getBoundingClientRect();
-  send('tap', {x:(e.clientX-r.left) * e.currentTarget.naturalWidth/r.width, y:(e.clientY-r.top) * e.currentTarget.naturalHeight/r.height});
+  send('tap', {x:(e.clientX-r.left) * viewportWidth/r.width, y:(e.clientY-r.top) * viewportHeight/r.height});
 };
