@@ -1,98 +1,55 @@
 import Foundation
-import ScreenCaptureKit
+import ReplayKit
 import CoreImage
 import ImageIO
 import CoreMedia
 
-final class ScreenStreamer: NSObject, SCStreamOutput, SCStreamDelegate, SCContentSharingPickerObserver {
+final class ScreenStreamer: NSObject {
     var onJPEG: ((Data) -> Void)?
     var onStateChange: ((Bool) -> Void)?
     var onError: ((String) -> Void)?
 
-    private var stream: SCStream?
-    private let picker = SCContentSharingPicker.shared
+    private let recorder = RPScreenRecorder.shared()
     private let queue = DispatchQueue(label: "RemoteView.ScreenStreamer", qos: .userInitiated)
     private let context = CIContext()
     private var lastSent = Date.distantPast
     private let minimumFrameInterval: TimeInterval = 1.0 / 8.0
 
-    override init() {
-        super.init()
-        picker.add(self)
-        picker.active = true
-    }
-
-    deinit { picker.remove(self) }
-
     func requestSharing() {
-        picker.active = true
-        picker.present(using: .display)
+        guard recorder.isAvailable else {
+            onError?("Screen capture is not currently available.")
+            return
+        }
+
+        recorder.startCapture(handler: { [weak self] sampleBuffer, type, error in
+            if let error {
+                DispatchQueue.main.async { self?.onError?(error.localizedDescription) }
+                return
+            }
+            guard type == .video else { return }
+            self?.process(sampleBuffer)
+        }, completionHandler: { [weak self] error in
+            DispatchQueue.main.async {
+                if let error {
+                    self?.onStateChange?(false)
+                    self?.onError?(error.localizedDescription)
+                } else {
+                    self?.onStateChange?(true)
+                }
+            }
+        })
     }
 
     func stop() {
-        guard let stream else {
-            onStateChange?(false)
-            return
-        }
-        self.stream = nil
-        stream.stopCapture { [weak self] _ in self?.onStateChange?(false) }
-    }
-
-    private func makeStream(for filter: SCContentFilter) async {
-        do {
-            if let existing = stream {
-                self.stream = nil
-                try await existing.stopCapture()
-            }
-
-            let configuration = SCStreamConfiguration()
-            configuration.width = 960
-            configuration.height = 2079
-            configuration.minimumFrameInterval = CMTime(value: 1, timescale: 8)
-            configuration.queueDepth = 3
-            configuration.pixelFormat = kCVPixelFormatType_32BGRA
-            configuration.showsCursor = false
-            configuration.capturesAudio = false
-
-            let stream = SCStream(filter: filter, configuration: configuration, delegate: self)
-            try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: queue)
-            self.stream = stream
-            try await stream.startCapture()
-            onStateChange?(true)
-        } catch {
-            self.stream = nil
-            onStateChange?(false)
-            onError?(error.localizedDescription)
-        }
-    }
-
-    func contentSharingPicker(_ picker: SCContentSharingPicker, didUpdateWith filter: SCContentFilter, for stream: SCStream?) {
-        if let stream {
-            stream.updateContentFilter(filter) { [weak self] error in
+        recorder.stopCapture { [weak self] error in
+            DispatchQueue.main.async {
+                self?.onStateChange?(false)
                 if let error { self?.onError?(error.localizedDescription) }
             }
-        } else {
-            Task { [weak self] in await self?.makeStream(for: filter) }
         }
     }
 
-    func contentSharingPicker(_ picker: SCContentSharingPicker, didCancelFor stream: SCStream?) {
-        if stream == nil { onStateChange?(false) }
-    }
-
-    func contentSharingPickerStartDidFailWithError(_ error: Error) {
-        onStateChange?(false)
-        onError?(error.localizedDescription)
-    }
-
-    func stream(_ stream: SCStream, didStopWithError error: Error) {
-        self.stream = nil
-        onStateChange?(false)
-        onError?(error.localizedDescription)
-    }
-
-    func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
-        guard type == .screen else { return }
+    private func process(_ sampleBuffer: CMSampleBuffer) {
         let now = Date()
         guard now.timeIntervalSince(lastSent) >= minimumFrameInterval else { return }
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
