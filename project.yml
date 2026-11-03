@@ -8,11 +8,7 @@ targets:
     type: application
     platform: iOS
     sources:
-      - path: iOS/RemoteView/RemoteViewApp.swift
-      - path: iOS/RemoteView/ContentView.swift
-      - path: iOS/RemoteView/RemoteSession.swift
-      - path: iOS/RemoteView/WebSocketClient.swift
-      - path: iOS/RemoteView/ScreenStreamer.swift
+      - path: iOS/RemoteView/*.swift
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.remoteview.PhoneControl
