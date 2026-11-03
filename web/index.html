@@ -1,11 +1,61 @@
 <!doctype html>
-<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Phone Browser Remote</title><link rel="stylesheet" href="style.css"></head>
-<body><main>
-<h1>Phone Browser Remote</h1>
-<section class="card"><label>Pairing code</label><div class="row"><input id="code" inputmode="numeric" maxlength="6" placeholder="123456"><button id="connect">Connect</button></div><div id="status">Disconnected</div></section>
-<section class="browser card">
-<div class="row"><button id="back">←</button><button id="forward">→</button><button id="reload">↻</button><input id="url" placeholder="https://example.com"><button id="go">Go</button></div>
-<div class="screen-wrap"><img id="screen" alt="iPhone browser screen"></div>
-<div class="row controls"><button id="scrollUp">↑ Scroll</button><button id="scrollDown">↓ Scroll</button><input id="typeText" placeholder="Type into focused field"><button id="type">Type</button></div>
-<p class="muted">Tap the phone screen image to click webpage elements.</p>
-</section></main><script src="app.js"></script></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090b10">
+<title>Phone Browser Remote</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">⌁</span><div><strong>Phone Browser</strong><small>Remote Control</small></div></div>
+  <div id="connectionPill" class="pill offline"><span></span><b id="status">Disconnected</b></div>
+</header>
+
+<main class="layout">
+  <section class="setup card">
+    <div class="section-title"><div><h1>Connect your iPhone</h1><p>Open the Phone Browser app, then enter its 6-digit pairing code.</p></div><div class="lock">🔒</div></div>
+    <div class="connect-row">
+      <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-label="Pairing code">
+      <button id="connect" class="primary">Connect</button>
+    </div>
+    <div id="hint" class="hint">Your Render service is ready. Keep the iPhone app open while pairing.</div>
+  </section>
+
+  <section class="card browser-card">
+    <div class="toolbar">
+      <div class="nav-buttons">
+        <button id="back" title="Back" aria-label="Back">‹</button>
+        <button id="forward" title="Forward" aria-label="Forward">›</button>
+        <button id="reload" title="Reload" aria-label="Reload">↻</button>
+      </div>
+      <div class="address">
+        <span>⌕</span><input id="url" autocomplete="url" placeholder="https://example.com" aria-label="Web address">
+        <button id="go">Go</button>
+      </div>
+    </div>
+
+    <div class="viewer">
+      <div id="empty" class="empty">
+        <div class="empty-icon">📱</div>
+        <h2>Waiting for iPhone</h2>
+        <p>Connect with the pairing code above to see the browser here.</p>
+      </div>
+      <img id="screen" alt="Live iPhone browser">
+      <div id="loading" class="loading" hidden>Connecting…</div>
+    </div>
+
+    <div class="controls">
+      <button id="scrollUp">↑ Scroll up</button>
+      <button id="scrollDown">↓ Scroll down</button>
+      <div class="type-control"><input id="typeText" placeholder="Type into the focused webpage field"><button id="type">Send text</button></div>
+    </div>
+    <p class="tip">Tip: click directly on the live browser to activate links, buttons, and webpage fields.</p>
+  </section>
+</main>
+
+<footer>Phone Browser Remote · Powered by your Render Web Service</footer>
+<script src="app.js"></script>
+</body>
+</html>
