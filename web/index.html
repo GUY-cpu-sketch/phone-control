@@ -1,1 +1,11 @@
-<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Phone Control</title><link rel="stylesheet" href="style.css"></head><body><main><h1>Phone Control</h1><p class="muted">iPhone screen viewer</p><section class="card"><label>Pairing code</label><input id="code" inputmode="numeric" maxlength="6" placeholder="123456"><label>WebSocket URL</label><input id="url" value="ws://localhost:8787/ws"><button id="connect">Connect</button><span id="status">Disconnected</span></section><section class="screen"><img id="screen" alt="iPhone screen stream"></section><div class="controls"><button data-cmd="home">Home</button><button data-cmd="back">Back</button><button data-cmd="lock">Lock</button></div></main><script src="app.js"></script></body></html>
+<!doctype html>
+<html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Phone Browser Remote</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<h1>Phone Browser Remote</h1>
+<section class="card"><label>Pairing code</label><div class="row"><input id="code" inputmode="numeric" maxlength="6" placeholder="123456"><button id="connect">Connect</button></div><div id="status">Disconnected</div></section>
+<section class="browser card">
+<div class="row"><button id="back">←</button><button id="forward">→</button><button id="reload">↻</button><input id="url" placeholder="https://example.com"><button id="go">Go</button></div>
+<div class="screen-wrap"><img id="screen" alt="iPhone browser screen"></div>
+<div class="row controls"><button id="scrollUp">↑ Scroll</button><button id="scrollDown">↓ Scroll</button><input id="typeText" placeholder="Type into focused field"><button id="type">Type</button></div>
+<p class="muted">Tap the phone screen image to click webpage elements.</p>
+</section></main><script src="app.js"></script></body></html>
