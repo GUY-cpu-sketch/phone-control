@@ -92,7 +92,7 @@ final class BrowserController: NSObject, ObservableObject, WKNavigationDelegate,
             "url": webView.url?.absoluteString ?? currentURL,
             "title": webView.title ?? "",
             "canGoBack": webView.canGoBack,
-            "canGoForward": webView.canGoForward
+            "canGoForward": webView.canGoForward, "viewportWidth": webView.bounds.width, "viewportHeight": webView.bounds.height
         ]
     }
 
