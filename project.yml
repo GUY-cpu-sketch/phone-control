@@ -15,3 +15,5 @@ targets:
         SWIFT_VERSION: 5.0
         INFOPLIST_FILE: iOS/RemoteView/Info.plist
         CODE_SIGN_ENTITLEMENTS: iOS/RemoteView/RemoteView.entitlements
+
+# Clean build test
