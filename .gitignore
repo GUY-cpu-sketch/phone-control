@@ -1,0 +1,5 @@
+DerivedData/
+.build/
+*.xcuserstate
+.DS_Store
+node_modules/
