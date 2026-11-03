@@ -4,41 +4,18 @@ import UIKit
 
 @MainActor
 final class RemoteSession: ObservableObject {
-    enum RemoteAction {
-        case tap
-        case swipe
-    }
-
     @Published private(set) var isConnected = false
-    @Published private(set) var isStreaming = false
     @Published private(set) var pairingCode: String?
     @Published private(set) var statusText = "Disconnected"
     @Published private(set) var lastError: String?
 
-    let remoteActionPublisher = PassthroughSubject<RemoteAction, Never>()
-
+    let browser = BrowserController()
     private let socket = WebSocketClient()
-    private let streamer = ScreenStreamer()
+    private var streamTask: Task<Void, Never>?
 
     init() {
         socket.onEvent = { [weak self] event in
-            Task { @MainActor in
-                self?.handle(event)
-            }
-        }
-        socket.onBinary = { _ in }
-        streamer.onJPEG = { [weak self] data in
-            self?.socket.sendBinary(data)
-        }
-        streamer.onStateChange = { [weak self] streaming in
-            Task { @MainActor in
-                self?.isStreaming = streaming
-            }
-        }
-        streamer.onError = { [weak self] message in
-            Task { @MainActor in
-                self?.lastError = message
-            }
+            Task { @MainActor in self?.handle(event) }
         }
     }
 
@@ -53,19 +30,32 @@ final class RemoteSession: ObservableObject {
     }
 
     func disconnect() {
-        stopStreaming()
+        streamTask?.cancel()
+        streamTask = nil
         socket.disconnect()
         isConnected = false
         pairingCode = nil
         statusText = "Disconnected"
     }
 
-    func startStreaming() async {
-        streamer.requestSharing()
+    func startStreaming() {
+        streamTask?.cancel()
+        streamTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                if self.isConnected { await self.sendSnapshot() }
+                try? await Task.sleep(nanoseconds: 250_000_000)
+            }
+        }
     }
 
-    func stopStreaming() {
-        streamer.stop()
+    private func sendSnapshot() async {
+        await withCheckedContinuation { continuation in
+            browser.snapshotJPEG { [weak self] data in
+                if let data { self?.socket.sendBinary(data) }
+                continuation.resume()
+            }
+        }
     }
 
     private func handle(_ event: WebSocketClient.Event) {
@@ -74,6 +64,7 @@ final class RemoteSession: ObservableObject {
             isConnected = true
             statusText = "Connected"
             socket.sendJSON(["type": "hello", "role": "device", "name": UIDevice.current.name])
+            startStreaming()
         case .disconnected(let reason):
             isConnected = false
             statusText = "Disconnected"
@@ -82,14 +73,31 @@ final class RemoteSession: ObservableObject {
             guard let type = payload["type"] as? String else { return }
             if type == "welcome" {
                 pairingCode = payload["pairingCode"] as? String
-            } else if type == "command",
-                      let command = payload["command"] as? [String: Any],
-                      let name = command["name"] as? String {
-                if name == "tap" { remoteActionPublisher.send(.tap) }
-                if name == "swipe" { remoteActionPublisher.send(.swipe) }
+            } else if type == "command", let name = payload["command"] as? String {
+                handleCommand(name, payload: payload)
             }
         case .binary:
             break
         }
+    }
+
+    private func handleCommand(_ name: String, payload: [String: Any]) {
+        switch name {
+        case "navigate":
+            if let url = payload["url"] as? String { browser.navigate(url) }
+        case "back": browser.goBack()
+        case "forward": browser.goForward()
+        case "reload": browser.reload()
+        case "scroll":
+            if let delta = payload["deltaY"] as? Double { browser.scroll(deltaY: CGFloat(delta)) }
+        case "tap":
+            if let x = payload["x"] as? Double, let y = payload["y"] as? Double {
+                browser.tap(x: CGFloat(x), y: CGFloat(y))
+            }
+        case "type":
+            if let text = payload["text"] as? String { browser.typeText(text) }
+        default: break
+        }
+        socket.sendJSON(browser.navigationState())
     }
 }
