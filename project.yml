@@ -8,12 +8,12 @@ targets:
     type: application
     platform: iOS
     sources:
-      - path: iOS/RemoteView/*.swift
+      - path: iOS/RemoteView
+        includes:
+          - "*.swift"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.remoteview.PhoneControl
         SWIFT_VERSION: 5.0
         INFOPLIST_FILE: iOS/RemoteView/Info.plist
         CODE_SIGN_ENTITLEMENTS: iOS/RemoteView/RemoteView.entitlements
-
-# Clean build test
