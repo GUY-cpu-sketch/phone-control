@@ -1,0 +1,17 @@
+name: RemoteView
+options:
+  bundleIdPrefix: com.remoteview
+  deploymentTarget:
+    iOS: "17.0"
+targets:
+  RemoteView:
+    type: application
+    platform: iOS
+    sources:
+      - path: iOS/RemoteView
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.remoteview.PhoneControl
+        SWIFT_VERSION: 5.0
+        INFOPLIST_FILE: iOS/RemoteView/Info.plist
+        CODE_SIGN_ENTITLEMENTS: iOS/RemoteView/RemoteView.entitlements
