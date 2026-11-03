@@ -1,0 +1,22 @@
+name: Build iOS app
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Xcode project
+        run: xcodegen generate
+      - name: Build unsigned iOS app
+        run: xcodebuild -project RemoteView.xcodeproj -scheme RemoteView -sdk iphoneos -configuration Release -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+      - name: Package app
+        run: cd build/Build/Products/Release-iphoneos && zip -r RemoteView-unsigned.zip RemoteView.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RemoteView-iOS-unsigned
+          path: build/Build/Products/Release-iphoneos/RemoteView-unsigned.zip
