@@ -8,8 +8,11 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
-      - name: Install XcodeGen
-        run: brew install xcodegen
+      - name: Install build tools
+        run: brew install xcodegen imagemagick
+      - name: Rasterize app icon
+        run: |
+          magick -background none iOS/RemoteView/Assets.xcassets/AppIcon.appiconset/AppIcon.svg -resize 1024x1024 iOS/RemoteView/Assets.xcassets/AppIcon.appiconset/AppIcon.png
       - name: Generate Xcode project
         run: xcodegen generate
       - name: Build unsigned iOS app
