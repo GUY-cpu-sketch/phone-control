@@ -11,13 +11,12 @@ targets:
       - path: iOS/RemoteView
         includes:
           - "*.swift"
+    resources:
+      - path: iOS/RemoteView/Assets.xcassets
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.remoteview.PhoneControl
         SWIFT_VERSION: 5.0
         INFOPLIST_FILE: iOS/RemoteView/Info.plist
         CODE_SIGN_ENTITLEMENTS: iOS/RemoteView/RemoteView.entitlements
-
-# XcodeGen validation
-
-# ReplayKit build validation
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
