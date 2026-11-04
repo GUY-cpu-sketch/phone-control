@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDisplayName</key>
-	<string>Phone Control</string>
+	<string>Phone Browser</string>
 	<key>CFBundleName</key>
-	<string>Phone Control</string>
+	<string>Phone Browser</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.remoteview.PhoneControl</string>
 	<key>CFBundleExecutable</key>
